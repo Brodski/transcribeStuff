@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from flask import Flask
 # from aioflask import Flask
-import asyncio
+# import asyncio
 
 import requests 
 from bs4 import BeautifulSoup
@@ -21,10 +21,10 @@ def home():
     return """
     <h1>Links to all other routes in the app.</h1>
     <ul>
-        <li><a href="/yo">/yo</a></li>
-        <li><a href="/test">/test scrapes ycombinator</a></li>
-        <li><a href="/yt">/yt Gangnam style</a></li>
-        <li><a href="/yt1">/yt1 extract_info </a></li>
+        <li><a href="/yo">/yo (no yt, no http)</a></li>
+        <li><a href="/test">/test (scrapes ycombinator)</a></li>
+        <li><a href="/yt">/yt (downloads a vid)</a></li>
+        <li><a href="/yt1">/yt1 (extract_info) </a></li>
         <li><a href="/gera">/gera gera stuff </a></li>
     </ul>
 
@@ -33,7 +33,8 @@ def home():
 @app.route('/yo/<text>')
 @app.route('/yo/')
 def yo(text="brother"):
-    return "Yo {}".format(text)
+
+    return "Yo {} @ {}".format(text, app.root_path)
 
 @app.route('/gera/')
 async def gera():
@@ -45,13 +46,11 @@ async def gera():
     res = await session.get(url)
     await res.html.arender()
     # Use the BeautifulSoup library to parse the webpage.
-    # print(res)
     # print(res.status_code)
     # print(res.links)
     # print(res.content)
     # soup = BeautifulSoup(res.text, 'html.parser')
-    # # Select all the elements with the class storylink
-    
+    # # Select all the elements with the class storylink    
     # print(soup.prettify())
     # links = soup.select('a[href^="/videos/"]')
     # print(links)
@@ -88,9 +87,7 @@ def test():
     def print_results(hnlist):
         for idx, item in enumerate(hnlist):
             print('{}. {} - {} points'.format(idx, item['title'], item['votes']))
-    # Call the custom function to create a custom dictionary from the HN elements.
     hn = create_custom_hn(links, subtext)
-    # Call the custom function to print the results to the terminal.
     print_results(hn)
 
     return "Test"
@@ -98,32 +95,14 @@ def test():
 
 @app.route('/yt/')
 def yt():
-    def my_hook(d):
-        if d['status'] == 'finished':
-            print('Done downloading, now converting ...')
-        if d['status'] == 'filename':
-            print('Filename=====', d['filename'])
-        if d['status'] == 'downloaded_bytes':
-            print('downloaded_bytes=====', d['downloaded_bytes'])
-        if d['status'] == 'total_bytes':
-            print('total_bytes=====', d['total_bytes'])
-        if d['status'] == 'total_bytes_estimate':
-            print('total_bytes_estimate=====', d['total_bytes_estimate'])
-        if d['status'] == 'elapsed':
-            print('elapsed=====', d['elapsed'])
-        if d['status'] == 'eta':
-            print('eta=====', d['eta'])
-        if d['status'] == 'speed':
-            print('speed=====', d['speed'])
-        if d['status'] == 'fragment_index':
-            print('fragment_index=====', d['fragment_index'])
-
 
     ydl_opts = {
         # 'format': 'bestaudio/best',
         # 'format': 'worstvideo+bestaudio',
         # 'format': '(worstvideo+bestaudio)',
-        'format': 'worst',
+        'format': 'worstvideo/bestaudio',
+        # 'format': 'worst',
+        'output': '{}/%(title)s-%(id)s.%(ext)s'.format(app.root_path),
         "verbose": True,
         # "listformats": True,
         # 'postprocessors': [{
@@ -134,36 +113,30 @@ def yt():
                                         #https://github.com/ytdl-org/youtube-dl/blob/195f22f679330549882a8234e7234942893a4902/youtube_dl/postprocessor/ffmpeg.py#L302
         # }],
         # 'logger': MyLogger(),
-        'progress_hooks': [my_hook],
+        # 'progress_hooks': [my_hook],
     }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download(['https://www.twitch.tv/videos/1637006503'])
-        # ydl.download(['https://www.youtube.com/watch?v=9bZkp7q19f0'])
-    # measure execution time of a code snippet. start time and end time difference is the execution time.
     start_time = time.time()
     
-    print("GOGOGOOG--- ", start_time)
-    # with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-    #      ydl.download(['https://www.youtube.com/watch?v=9bZkp7q19f0'])
+    print("GOGOGOOG---start", start_time)
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download(['https://www.twitch.tv/videos/1637006503'])
+        # ydl.download(['https://www.twitch.tv/videos/1683425427'])
+        # ydl.download(['https://www.youtube.com/watch?v=9bZkp7q19f0'])
          
     end_time = time.time() 
-    print("GOGOGOOG ---- ", end_time)
-    print("BAM ---- ", end_time - start_time )
-    print("BAM ---- ", end_time - start_time )
-    print("BAM ---- ", end_time - start_time )
-    print("BAM ---- ", end_time - start_time )
-    print("BAM ---- ", end_time - start_time )
-    print("BAM ---- ", end_time - start_time )
-    return "YT"
+    print("GOGOGOOG ---- end", end_time)
+    print("time-diff ---- ", end_time - start_time )
 
 @app.route('/yt1/')
 def yt1():
     ydl_opts = {}
 
     # with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-    with ydl.YoutubeDL(ydl_opts) as ydl:
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        #  https://github.com/ytdl-org/youtube-dl/blob/master/youtube_dl/YoutubeDL.py#L137-L312
         meta = ydl.extract_info(
-            'https://www.youtube.com/watch?v=9bZkp7q19f0', download=True) 
+            'https://www.twitch.tv/videos/1637006503', download=True) 
+            # 'https://www.youtube.com/watch?v=9bZkp7q19f0', download=True) 
 
     # print('meta : %s' %(meta))
     print('--------------------')

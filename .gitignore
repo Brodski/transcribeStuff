@@ -1,2 +1,6 @@
 testvids/
 t_env/
+*.mp4
+*.webm
+*.mp3
+*.avi
