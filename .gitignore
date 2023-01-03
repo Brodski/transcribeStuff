@@ -1,6 +1,9 @@
 testvids/
 t_env/
+n_env/
 *.mp4
 *.webm
 *.mp3
 *.avi
+*mp4.part*
+*mp4.ytdl*

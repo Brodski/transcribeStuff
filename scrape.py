@@ -1,15 +1,14 @@
 from __future__ import unicode_literals
-from flask import Flask
+# from flask import Flask
 # from aioflask import Flask
 
 import requests 
 from bs4 import BeautifulSoup
+# from requests_html import HTMLSession
 # from requests_html import AsyncHTMLSession
-from requests_html import HTMLSession
-from requests_html import AsyncHTMLSession
 
-import youtube_dl
-import yt_dlp
+# import youtube_dl
+# import yt_dlp
 
 import time
 import asyncio
@@ -28,17 +27,22 @@ import sys
 import re
 
 
+###
+# Assembly AI multi lingual speech recognition
+# https://www.assemblyai.com/blog/how-to-run-openais-whisper-speech-recognition-model/#whisper-advanced-usage
+# it links here too --> https://github.com/openai/whisper/blob/main/notebooks/Multilingual_ASR.ipynb
+#
+###
+
 options = Options()
 # options.add_argument('--headless')
+options.add_argument('--window-size=1550,1250') # width, height
 browser = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+# Dimension dem = new Dimension(750,450);
+# driver.manage().window().setSize(dem);
 
 
 async def gera():
-    # scrape a webpage and print the results to the terminal.
-    # Use the requests library to download the webpage.
-    # res = requests.get('https://news.ycombinator.com/news')
-    # make an asynchronous request to the webpage.
-
     channel = "lolgeranimo"
     url = f'https://www.twitch.tv/{channel}/videos?filter=archives&sort=time'
     # session = HTMLSession()
@@ -51,9 +55,10 @@ async def gera():
     print (browser.title)
     browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
     time.sleep(3)
-    
+    print ("scroll to bottom 1")
     browser.execute_script("""document.querySelector("[id='root'] main .simplebar-scroll-content").scroll(0, 10000)""")
     time.sleep(3)
+    print ("scroll to bottom 2")
     browser.execute_script("""document.querySelector("[id='root'] main .simplebar-scroll-content").scroll(0, 10000)""")
     time.sleep(3)
     
@@ -63,15 +68,11 @@ async def gera():
     vids = soup.select("a[href^='/videos/']")
     print ("vids")
     print (vids)
-    # for i in range(len(vids)):
-        # print(i)
-        # print(vids[i])
     allHrefs = []
     for tag in vids:
         allHrefs.append(tag['href'])
-    allHrefs.sort()
-    # for href in allHrefs:
-    #     print(href)
+        print ("tag['href']=" + tag['href'])
+    # allHrefs.sort()
     hrefsSet = set()
     for href in allHrefs:
         match = re.search(r'(/videos/\d+)(\?.*)', href)
@@ -79,11 +80,6 @@ async def gera():
             print (match.group(1))
             hrefsSet.add(match.group(1))
 
-    print ("hrefsSet")
-    print ("hrefsSet")
-    print ("hrefsSet")
-    print ("hrefsSet")
-    print ("hrefsSet")
     print ("hrefsSet")
     print ("hrefsSet")
     [print (hrefsSet) for hrefsSet in enumerate(hrefsSet)]
@@ -94,8 +90,6 @@ async def gera():
 
     
 if __name__ == "__main__":
-    # run the gera() function
-    # gera()
     loop = asyncio.get_event_loop()
     loop.run_until_complete(gera())
     loop.close()

@@ -3,11 +3,11 @@ from flask import Flask
 # from aioflask import Flask
 # import asyncio
 
-import requests 
-from bs4 import BeautifulSoup
-from requests_html import AsyncHTMLSession
+# import requests 
+# from bs4 import BeautifulSoup
+# from requests_html import AsyncHTMLSession
 
-import youtube_dl
+# import youtube_dl
 import yt_dlp
 
 import time
@@ -21,11 +21,12 @@ def home():
     return """
     <h1>Links to all other routes in the app.</h1>
     <ul>
-        <li><a href="/yo">/yo (no yt, no http)</a></li>
-        <li><a href="/test">/test (scrapes ycombinator)</a></li>
+        <li><a href="/yo">/yo (Hello World)</a></li>
         <li><a href="/yt">/yt (downloads a vid)</a></li>
-        <li><a href="/yt1">/yt1 (extract_info) </a></li>
-        <li><a href="/gera">/gera gera stuff </a></li>
+        <li><a href="/yt1">/yt1 (extract_info a vid) </a></li>
+        <hr/>
+        <li><a href="/gera">/gera gera stuff RIP </a></li>
+        <li><a href="/test">/test (scrapes ycombinator) RIP </a></li>
     </ul>
 
     """
@@ -36,61 +37,43 @@ def yo(text="brother"):
 
     return "Yo {} @ {}".format(text, app.root_path)
 
-@app.route('/gera/')
-async def gera():
-    channel = "lolgeranimo"
-    url = f'https://www.twitch.tv/{channel}/videos?filter=archives&sort=time'
-    session = AsyncHTMLSession()
-    # await for the response
-    
-    res = await session.get(url)
-    await res.html.arender()
-    # Use the BeautifulSoup library to parse the webpage.
-    # print(res.status_code)
-    # print(res.links)
-    # print(res.content)
-    # soup = BeautifulSoup(res.text, 'html.parser')
-    # # Select all the elements with the class storylink    
-    # print(soup.prettify())
-    # links = soup.select('a[href^="/videos/"]')
-    # print(links)
-    return "links"
+# @app.route('/gera/')
+# async def gera():
+#     channel = "lolgeranimo"
+#     url = f'https://www.twitch.tv/{channel}/videos?filter=archives&sort=time'
+#     session = AsyncHTMLSession()    
+#     res = await session.get(url)
+#     await res.html.arender()
+#     return "links"
 
-@app.route('/test/')
-def test():
-    # scrape a webpage and print the results to the terminal. 
-    # Use the requests library to download the webpage.
-    res = requests.get('https://news.ycombinator.com/news')
-    # Use the BeautifulSoup library to parse the webpage.
-    print(res)
-    soup = BeautifulSoup(res.text, 'html.parser')
-    # Select all the elements with the class storylink
-    
-    print(soup)
-    links = soup.select('.titleline')
-    print(links)
 
-    # Select all the elements with the class score
-    subtext = soup.select('.subtext')
-    # Create a custom function to create a custom dictionary from the HN elements.
-    def create_custom_hn(links, subtext):
-        hn = []
-        for idx, item in enumerate(links):
-            title = links[idx].getText()
-            href = links[idx].get('href', None)
-            vote = subtext[idx].select('.score')
-            if len(vote):
-                points = int(vote[0].getText().replace(' points', ''))
-                if points > 99:
-                    hn.append({'title': title, 'link': href, 'votes': points})
-        return hn
-    def print_results(hnlist):
-        for idx, item in enumerate(hnlist):
-            print('{}. {} - {} points'.format(idx, item['title'], item['votes']))
-    hn = create_custom_hn(links, subtext)
-    print_results(hn)
+# @app.route('/test/')
+# def test():
+#     res = requests.get('https://news.ycombinator.com/news')
+#     print(res)
+#     soup = BeautifulSoup(res.text, 'html.parser')    
+#     print(soup)
+#     links = soup.select('.titleline')
+#     print(links)
+#     subtext = soup.select('.subtext')
+#     def create_custom_hn(links, subtext):
+#         hn = []
+#         for idx, item in enumerate(links):
+#             title = links[idx].getText()
+#             href = links[idx].get('href', None)
+#             vote = subtext[idx].select('.score')
+#             if len(vote):
+#                 points = int(vote[0].getText().replace(' points', ''))
+#                 if points > 99:
+#                     hn.append({'title': title, 'link': href, 'votes': points})
+#         return hn
+#     def print_results(hnlist):
+#         for idx, item in enumerate(hnlist):
+#             print('{}. {} - {} points'.format(idx, item['title'], item['votes']))
+#     hn = create_custom_hn(links, subtext)
+#     print_results(hn)
 
-    return "Test"
+#     return "Test"
 
 
 @app.route('/yt/')
@@ -119,7 +102,7 @@ def yt():
     
     print("GOGOGOOG---start", start_time)
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download(['https://www.twitch.tv/videos/1637006503'])
+        ydl.download(['https://www.twitch.tv/videos/1693915459'])
         # ydl.download(['https://www.twitch.tv/videos/1683425427'])
         # ydl.download(['https://www.youtube.com/watch?v=9bZkp7q19f0'])
          
@@ -129,13 +112,18 @@ def yt():
 
 @app.route('/yt1/')
 def yt1():
-    ydl_opts = {}
+    
+    ydl_opts = {
+        'format': 'worstvideo/bestaudio',
+        'output': '{}/%(title)s-%(id)s.%(ext)s'.format(app.root_path),
+        "verbose": True
+    }
 
     # with youtube_dl.YoutubeDL(ydl_opts) as ydl:
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         #  https://github.com/ytdl-org/youtube-dl/blob/master/youtube_dl/YoutubeDL.py#L137-L312
         meta = ydl.extract_info(
-            'https://www.twitch.tv/videos/1637006503', download=True) 
+            'https://www.twitch.tv/videos/1693915459', download=True) 
             # 'https://www.youtube.com/watch?v=9bZkp7q19f0', download=True) 
 
     # print('meta : %s' %(meta))
